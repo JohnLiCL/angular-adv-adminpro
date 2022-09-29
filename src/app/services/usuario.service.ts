@@ -8,6 +8,7 @@ import { LoginForm } from '../interfaces/login-form.interface';
 import { RegisterForm } from '../interfaces/register-form.interface';
 import { Observable, of } from 'rxjs';
 import { Router } from '@angular/router';
+import { Usuario } from '../models/usuario.models';
 
 declare const google: any;
 
@@ -19,6 +20,7 @@ const urlApi = environment.urlApi
 export class UsuarioService {
 
   public auth2: any;
+  public usuario!: Usuario;
 
   constructor(private http: HttpClient,
     private router: Router,
@@ -34,7 +36,7 @@ export class UsuarioService {
       });
       resolve();
     })
- }
+  }
 
   handleCredentialResponse(response: any) {
     //console.log("Encoded JWT ID token: " + response.credential);
@@ -54,23 +56,45 @@ export class UsuarioService {
   logout() {
     localStorage.removeItem('token');
     google.accounts.id.disableAutoSelect();
-            this.router.navigateByUrl('/login');
+    this.router.navigateByUrl('/login');
   }
 
-  validaToken(): Observable<boolean> {
-    const token = localStorage.getItem('token') || '';
+  get token(): string {
+    return localStorage.getItem('token') || '';
+  }
+  get uid(): string {
+    return this.usuario.uid || '';
+  }
 
+
+  validaToken(): Observable<boolean> {
     return this.http.get(`${urlApi}/login/renew`, {
       headers: {
-        'x-token': token
+        'x-token': this.token
       }
     }).pipe(
-      tap((resp: any) => {
+      map((resp: any) => {
+        const { email, google, nombre, apellido, role, img = '', uid } = resp.usuarioDB;
+        this.usuario = new Usuario(nombre, apellido, email, '', img, google, role, uid);
         localStorage.setItem('token', resp.token);
+        return true;
       }),
-      map(resp => true),
       catchError(error => of(false))
     );
+  }
+
+  updateUsuario(data: {nombre: string, apellido: string, email: string, role: string | undefined }) {
+    
+    data = {
+      ...data,
+      role: this.usuario.role
+    };
+        
+    return this.http.put(`${urlApi}/usuarios/${this.uid}`, data, {
+      headers: {
+        'x-token': this.token
+      }
+    });
   }
 
   crearUsuario(formData: RegisterForm) {
