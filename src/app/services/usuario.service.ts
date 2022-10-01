@@ -9,6 +9,7 @@ import { RegisterForm } from '../interfaces/register-form.interface';
 import { Observable, of } from 'rxjs';
 import { Router } from '@angular/router';
 import { Usuario } from '../models/usuario.models';
+import { CargarUsuario } from '../interfaces/cargar-usuarios.interface';
 
 declare const google: any;
 
@@ -66,6 +67,14 @@ export class UsuarioService {
     return this.usuario.uid || '';
   }
 
+  get headers(){
+    return {
+      headers: {
+        'x-token': this.token
+      }
+    }
+  }
+
 
   validaToken(): Observable<boolean> {
     return this.http.get(`${urlApi}/login/renew`, {
@@ -84,17 +93,11 @@ export class UsuarioService {
   }
 
   updateUsuario(data: {nombre: string, apellido: string, email: string, role: string | undefined }) {
-    
     data = {
       ...data,
       role: this.usuario.role
-    };
-        
-    return this.http.put(`${urlApi}/usuarios/${this.uid}`, data, {
-      headers: {
-        'x-token': this.token
-      }
-    });
+    }
+      return this.http.put(`${urlApi}/usuarios/${this.uid}`, data, this.headers);
   }
 
   crearUsuario(formData: RegisterForm) {
@@ -127,4 +130,41 @@ export class UsuarioService {
         )
       );
   }
+
+  cargarUsuarios(desde: number = 0) {
+    //localhost:3000/api/usuarios?desde=0
+    const url =`${urlApi}/usuarios?desde=${desde}`
+    return this.http.get<CargarUsuario>(url,this.headers)
+    .pipe(
+      map(resp =>{
+        const usuarios = resp.usuarios.map(
+          user => new Usuario(
+            user.nombre,
+            user.apellido,
+            user.email,
+            '',
+            user.img,
+            user.google,
+            user.role,
+            user.uid)
+        );
+        return {
+          total: resp.total,
+          usuarios
+        }
+      })
+    );
+
+  }
+
+  deleteUsuario(usuario: Usuario) {
+    //localhost:3000/api/usuarios/631a5f843b2d91a066159b97
+    const url =`${urlApi}/usuarios/${usuario.uid}`;
+    return this.http.delete(url,this.headers);
+  }
+
+  guardarUsuario(usuario: Usuario) {
+    return this.http.put(`${urlApi}/usuarios/${usuario.uid}`, usuario, this.headers);
+  }
+
 }

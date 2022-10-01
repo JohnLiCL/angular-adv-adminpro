@@ -16,15 +16,14 @@ export class Usuario {
 
   get imagenUrl() {
     //localhost:3000/api/upload/usuarios/b5bae541-c9bf-4f81-9895-ce94d2493065.png
-    if (this.img?.includes('https')) {
+    if (!this.img){
+      return `${urlApi}/upload/usuarios/no-image`;
+    }else if (this.img?.includes('https')) {
       return this.img;
-    }
-
-    if (this.img) {
+    }else if (this.img) {
       return `${urlApi}/upload/usuarios/${this.img}`;
     } else {
       return `${urlApi}/upload/usuarios/no-image`;
     }
-
   }
 }

@@ -12,6 +12,9 @@ import { PromesasComponent } from './promesas/promesas.component';
 import { RxjsComponent } from './rxjs/rxjs.component';
 import { PerfilComponent } from './perfil/perfil.component';
 
+//Mantenimientos
+import { UsuariosComponent } from './mantenimiento/usuarios/usuarios.component';
+
 
 const routes: Routes = [
   {
@@ -25,7 +28,10 @@ const routes: Routes = [
       { path: 'account-settings', component: AccountSettingsComponent, data: { title: 'Thema' } },
       { path: 'promesas', component: PromesasComponent, data: { title: 'Promesas' } },
       { path: 'rxjs', component: RxjsComponent, data: { title: 'Rxjs' } },
-      { path: 'perfil', component: PerfilComponent, data: { title: 'Configuracion de Cuenta' } }
+      { path: 'perfil', component: PerfilComponent, data: { title: 'Configuracion de Cuenta' }},
+
+      //Mantenimientos
+      { path: 'usuarios', component: UsuariosComponent, data: { title: 'Usuarios de aplicación' } }
     ]
   }
 ];
