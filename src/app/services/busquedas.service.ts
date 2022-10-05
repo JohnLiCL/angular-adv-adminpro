@@ -2,15 +2,22 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map, switchAll } from 'rxjs';
 import { environment } from 'src/environments/environment';
+import { Hospital } from '../models/hospital.models';
+import { Medico } from '../models/medico.models';
 import { Usuario } from '../models/usuario.models';
 
 const urlApi = environment.urlApi
+
+
 
 
 @Injectable({
   providedIn: 'root'
 })
 export class BusquedasService {
+
+  public hospitales: Hospital[] = [];
+  public hospitalesTemp: Hospital[] = [];
 
   constructor(private http: HttpClient) { }
 
@@ -26,8 +33,8 @@ export class BusquedasService {
     }
   }
 
-  private trasnformaUsuario(resultado: any[]): Usuario[] {
-    return resultado.map(
+  private trasnformaUsuario(resultados: any[]): Usuario[] {
+    return resultados.map(
       user => new Usuario(
         user.nombre,
         user.apellido,
@@ -38,6 +45,13 @@ export class BusquedasService {
         user.role,
         user.uid)
     );
+  }
+  
+  private trasnformaHospital(resultados: any[]): Hospital[] {
+    return resultados;
+  }
+  private trasnformaMedicos(resultados: any[]): Medico[] {
+    return resultados;
   }
 
   buscar(tipo: 'usuarios' | 'medicos' | 'hospitales',
@@ -50,6 +64,10 @@ export class BusquedasService {
           switch (tipo) {
             case 'usuarios':
               return this.trasnformaUsuario(resp.data);
+            case 'hospitales':
+              return this.trasnformaHospital(resp.data);
+            case 'medicos':
+              return this.trasnformaMedicos(resp.data);
             default:
               return [];
           }

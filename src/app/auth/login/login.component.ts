@@ -24,8 +24,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   constructor(private router: Router,
     private fb: FormBuilder,
-    private usuarioService: UsuarioService,
-    private ngZone: NgZone) { }
+    private usuarioService: UsuarioService) { }
 
   ngOnInit(): void {
 
