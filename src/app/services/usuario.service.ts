@@ -58,7 +58,12 @@ export class UsuarioService {
     localStorage.removeItem('token');
     google.accounts.id.disableAutoSelect();
     this.router.navigateByUrl('/login');
+    //ToDo: Borrar Menu
+    localStorage.removeItem('menu');
   }
+
+
+
 
   get token(): string {
     return localStorage.getItem('token') || '';
@@ -67,7 +72,10 @@ export class UsuarioService {
     return this.usuario.uid || '';
   }
 
-  get headers(){
+  get role(): 'ADMIN_ROL'| 'USER_ROL'{
+    return this.usuario.role!;
+  }
+  get headers() {
     return {
       headers: {
         'x-token': this.token
@@ -85,26 +93,27 @@ export class UsuarioService {
       map((resp: any) => {
         const { email, google, nombre, apellido, role, img = '', uid } = resp.usuarioDB;
         this.usuario = new Usuario(nombre, apellido, email, '', img, google, role, uid);
-        localStorage.setItem('token', resp.token);
+        this.guardarLocalStorage(resp.token,resp.menu);
+
         return true;
       }),
       catchError(error => of(false))
     );
   }
 
-  updateUsuario(data: {nombre: string, apellido: string, email: string, role: string | undefined }) {
+  updateUsuario(data: { nombre: string, apellido: string, email: string, role: string | undefined }) {
     data = {
       ...data,
       role: this.usuario.role
     }
-      return this.http.put(`${urlApi}/usuarios/${this.uid}`, data, this.headers);
+    return this.http.put(`${urlApi}/usuarios/${this.uid}`, data, this.headers);
   }
 
   crearUsuario(formData: RegisterForm) {
     return this.http.post(`${urlApi}/usuarios`, formData)
       .pipe(
         tap((resp: any) => {
-          localStorage.setItem('token', resp.token);
+          this.guardarLocalStorage(resp.token,resp.menu);
         }
         )
       );
@@ -114,7 +123,7 @@ export class UsuarioService {
     return this.http.post(`${urlApi}/login`, formData)
       .pipe(
         tap((resp: any) => {
-          localStorage.setItem('token', resp.token);
+          this.guardarLocalStorage(resp.token,resp.menu);
         }
         )
       );
@@ -125,7 +134,7 @@ export class UsuarioService {
       .pipe(
         tap((resp: any) => {
           //console.log('*****loginGoogle Respuesta: ',resp);
-          localStorage.setItem('token', resp.token);
+          this.guardarLocalStorage(resp.token,resp.menu);
         }
         )
       );
@@ -133,38 +142,43 @@ export class UsuarioService {
 
   cargarUsuarios(desde: number = 0) {
     //localhost:3000/api/usuarios?desde=0
-    const url =`${urlApi}/usuarios?desde=${desde}`
-    return this.http.get<CargarUsuario>(url,this.headers)
-    .pipe(
-      map(resp =>{
-        const usuarios = resp.usuarios.map(
-          user => new Usuario(
-            user.nombre,
-            user.apellido,
-            user.email,
-            '',
-            user.img,
-            user.google,
-            user.role,
-            user.uid)
-        );
-        return {
-          total: resp.total,
-          usuarios
-        }
-      })
-    );
+    const url = `${urlApi}/usuarios?desde=${desde}`
+    return this.http.get<CargarUsuario>(url, this.headers)
+      .pipe(
+        map(resp => {
+          const usuarios = resp.usuarios.map(
+            user => new Usuario(
+              user.nombre,
+              user.apellido,
+              user.email,
+              '',
+              user.img,
+              user.google,
+              user.role,
+              user.uid)
+          );
+          return {
+            total: resp.total,
+            usuarios
+          }
+        })
+      );
 
   }
 
   deleteUsuario(usuario: Usuario) {
     //localhost:3000/api/usuarios/631a5f843b2d91a066159b97
-    const url =`${urlApi}/usuarios/${usuario.uid}`;
-    return this.http.delete(url,this.headers);
+    const url = `${urlApi}/usuarios/${usuario.uid}`;
+    return this.http.delete(url, this.headers);
   }
 
   guardarUsuario(usuario: Usuario) {
     return this.http.put(`${urlApi}/usuarios/${usuario.uid}`, usuario, this.headers);
+  }
+
+  guardarLocalStorage(token: string, menu: any) {
+    localStorage.setItem('token', token);
+    localStorage.setItem('menu', JSON.stringify(menu));
   }
 
 }

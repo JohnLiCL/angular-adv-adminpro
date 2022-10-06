@@ -8,9 +8,6 @@ import { Usuario } from '../models/usuario.models';
 
 const urlApi = environment.urlApi
 
-
-
-
 @Injectable({
   providedIn: 'root'
 })
@@ -52,6 +49,11 @@ export class BusquedasService {
   }
   private trasnformaMedicos(resultados: any[]): Medico[] {
     return resultados;
+  }
+
+  busquedaGlobal(strBusqueda: string){
+    const url = `${urlApi}/busqueda/${strBusqueda}`
+    return this.http.get<any[]>(url, this.headers)
   }
 
   buscar(tipo: 'usuarios' | 'medicos' | 'hospitales',
